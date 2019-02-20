@@ -119,6 +119,13 @@ void hash_table_remove(BasicHashTable *ht, char *key)
  ****/
 char *hash_table_retrieve(BasicHashTable *ht, char *key)
 {
+  int hashIndex = hash(key, ht->capacity);
+
+  if (ht->storage[hashIndex] != NULL)
+  {
+    return ht->storage[hashIndex]->value;
+  }
+
   return NULL;
 }
 
@@ -142,8 +149,7 @@ int main(void)
   
   // hash_table_insert(ht, "line", "Here tomorrow...\n"); //sanity check to see if overwriting works
 
-
-  // printf("%s", hash_table_retrieve(ht, "line"));
+  printf("%s", hash_table_retrieve(ht, "line")); //should return: Here today...
 
   // hash_table_remove(ht, "line");
 
