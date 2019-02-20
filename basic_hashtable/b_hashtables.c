@@ -109,7 +109,15 @@ void hash_table_insert(BasicHashTable *ht, char *key, char *value)
  ****/
 void hash_table_remove(BasicHashTable *ht, char *key)
 {
+  int hashIndex = hash(key, ht->capacity);
 
+  if (ht->storage[hashIndex] != NULL)
+  {
+    ht->storage[hashIndex] = NULL;
+    free(ht->storage[hashIndex]);
+  }
+  
+  printf("RemovalWarning: Key at index %d has already been removed\n", hashIndex);
 }
 
 /****
@@ -151,8 +159,9 @@ int main(void)
 
   printf("%s", hash_table_retrieve(ht, "line")); //should return: Here today...
 
-  // hash_table_remove(ht, "line");
+  hash_table_remove(ht, "line");
 
+  hash_table_retrieve(ht, "line");
   // if (hash_table_retrieve(ht, "line") == NULL) {
   //   printf("...gone tomorrow. (success)\n");
   // } else {
