@@ -87,7 +87,19 @@ BasicHashTable *create_hash_table(int capacity)
  ****/
 void hash_table_insert(BasicHashTable *ht, char *key, char *value)
 {
+  int hashIndex = hash(key, ht->capacity);
 
+  if (ht->storage[hashIndex] == NULL)
+  {
+    ht->storage[hashIndex] = create_pair(key, value);
+    // printf("key:%s value:%s\n", key, value); //sanity check
+  }
+  else
+  {
+    fprintf(stderr, "OverwritingIndexWarning: Index %d is already in use and will be overwritten\n", hashIndex);
+    ht->storage[hashIndex] = create_pair(key, value);
+    // printf("key:%s value:%s\n", key, value); //sanity check - to see if it works uncomment second hash_table_insert() in main() at the bottom
+  }
 }
 
 /****
@@ -127,18 +139,21 @@ int main(void)
   struct BasicHashTable *ht = create_hash_table(16);
 
   hash_table_insert(ht, "line", "Here today...\n");
+  
+  // hash_table_insert(ht, "line", "Here tomorrow...\n"); //sanity check to see if overwriting works
 
-  printf("%s", hash_table_retrieve(ht, "line"));
 
-  hash_table_remove(ht, "line");
+  // printf("%s", hash_table_retrieve(ht, "line"));
 
-  if (hash_table_retrieve(ht, "line") == NULL) {
-    printf("...gone tomorrow. (success)\n");
-  } else {
-    fprintf(stderr, "ERROR: STILL HERE\n");
-  }
+  // hash_table_remove(ht, "line");
 
-  destroy_hash_table(ht);
+  // if (hash_table_retrieve(ht, "line") == NULL) {
+  //   printf("...gone tomorrow. (success)\n");
+  // } else {
+  //   fprintf(stderr, "ERROR: STILL HERE\n");
+  // }
+
+  // destroy_hash_table(ht);
 
   return 0;
 }
