@@ -70,7 +70,10 @@ unsigned int hash(char *str, int max)
  ****/
 HashTable *create_hash_table(int capacity)
 {
-  HashTable *ht;
+  HashTable *ht = malloc(sizeof(HashTable));
+
+  ht->capacity = capacity;
+  ht->storage = calloc(capacity, sizeof(LinkedPair *));
 
   return ht;
 }
@@ -86,7 +89,38 @@ HashTable *create_hash_table(int capacity)
  ****/
 void hash_table_insert(HashTable *ht, char *key, char *value)
 {
+  unsigned int hashIndex = hash(key, ht->capacity);
 
+  LinkedPair *linkedPair = create_pair(key, value);
+  printf("--> %s:%s at %d\n", key, value, hashIndex);
+
+  if (ht->storage[hashIndex] == NULL) //if @ index is empty
+  {
+    ht->storage[hashIndex] = linkedPair;
+    printf("key:%s value:%s\n", key, value); //sanity check
+  }
+  else // if @ index is not empty
+  {
+    if (strcmp(ht->storage[hashIndex]->key, key) == 0) //if previous key and current key match, replace value
+    {
+      printf("YO!!!!! %s == %s, ht->storage[hashIndex]->key, key");
+      // printf("--> %s == %s == %s", ht->storage[hashIndex]->key, key, linkedPair);
+      fprintf(stderr, "OverwritingIndexWarning: Index %d is already in use and will be overwritten\n", hashIndex);
+      ht->storage[hashIndex]->value = value;
+      printf("key:%s value:%s\n", key, value); //sanity check 
+    }
+    else // if previous key and current key don't match, add new pair to index
+    {
+    printf("HERE!!!!");
+    LinkedPair *nextPair = ht->storage[hashIndex]->next;
+    while (nextPair != NULL)
+    {
+      nextPair = nextPair->next;
+    }
+    nextPair->next = linkedPair;
+    }
+    printf("Else --> %s: %s, %s:%s\n", ht->storage[hashIndex]->key, ht->storage[hashIndex]->value, ht->storage[hashIndex]->next->key, ht->storage[hashIndex]->next->value);
+  }
 }
 
 /****
@@ -150,17 +184,17 @@ int main(void)
   hash_table_insert(ht, "line_2", "Filled beyond capacity\n");
   hash_table_insert(ht, "line_3", "Linked list saves the day!\n");
 
-  printf("%s", hash_table_retrieve(ht, "line_1"));
-  printf("%s", hash_table_retrieve(ht, "line_2"));
-  printf("%s", hash_table_retrieve(ht, "line_3"));
+  // printf("%s", hash_table_retrieve(ht, "line_1"));
+  // printf("%s", hash_table_retrieve(ht, "line_2"));
+  // printf("%s", hash_table_retrieve(ht, "line_3"));
 
-  int old_capacity = ht->capacity;
-  ht = hash_table_resize(ht);
-  int new_capacity = ht->capacity;
+  // int old_capacity = ht->capacity;
+  // ht = hash_table_resize(ht);
+  // int new_capacity = ht->capacity;
 
-  printf("\nResizing hash table from %d to %d.\n", old_capacity, new_capacity);
+  // printf("\nResizing hash table from %d to %d.\n", old_capacity, new_capacity);
 
-  destroy_hash_table(ht);
+  // destroy_hash_table(ht);
 
   return 0;
 }

@@ -70,7 +70,10 @@ unsigned int hash(char *str, int max)
  ****/
 BasicHashTable *create_hash_table(int capacity)
 {
-  BasicHashTable *ht;
+  BasicHashTable *ht = malloc(sizeof(BasicHashTable));
+
+  ht->capacity = capacity;
+  ht->storage = calloc(capacity, sizeof(Pair *));
 
   return ht;
 }
@@ -84,7 +87,34 @@ BasicHashTable *create_hash_table(int capacity)
  ****/
 void hash_table_insert(BasicHashTable *ht, char *key, char *value)
 {
+  // //hash the key, get index back
+  // unsigned int index = hash(key, ht->capacity);
+  // //create a (Pair *) from the key and value
+  // Pair *pair = create_pair(key, value);
+  // //see if there is already (Pair *)at the given index
+  //   if (ht->storage != NULL)
+  //   {
+  //     Pair *stored_pair = ht->storage[index];
+  //     //if there is, overwrite it and free the memory of the overwritten (Pair *)
+  //     printf("Overwriting key/value pair '%s:%s with %s:%s\n", stored_pair->key, stored_pair->value, key, value);
+  //     destroy_pair(stored_pair);
+  //   }    
+  //   //else, put the (Pair *) ther
+  //   ht->storage[index] = pair;
+    
+  int hashIndex = hash(key, ht->capacity);
 
+  if (ht->storage[hashIndex] == NULL)
+  {
+    ht->storage[hashIndex] = create_pair(key, value);
+    // printf("key:%s value:%s\n", key, value); //sanity check
+  }
+  else
+  {
+    fprintf(stderr, "OverwritingIndexWarning: Index %d is already in use and will be overwritten\n", hashIndex);
+    ht->storage[hashIndex] = create_pair(key, value);
+    // printf("key:%s value:%s\n", key, value); //sanity check - to see if it works uncomment second hash_table_insert() in main() at the bottom
+  }
 }
 
 /****
@@ -94,7 +124,27 @@ void hash_table_insert(BasicHashTable *ht, char *key, char *value)
  ****/
 void hash_table_remove(BasicHashTable *ht, char *key)
 {
+  // //has the given key, get an index back
+  // unsigned int index = hash(key, ht->capacity);
 
+  // //check if storage holds a pair at the given index
+  // if (ht->storage[index] != NULL)
+  //   //free the Pair*
+  //   destroy_pair(ht->storage[index]);
+  //   //NULL it out
+  //   ht->storage[index] = NULL;
+  
+  // //else, there is nothing there, so nothing more to do
+
+  int hashIndex = hash(key, ht->capacity);
+
+  if (ht->storage[hashIndex] != NULL)
+  {
+    destroy_pair(ht->storage[hashIndex]);
+    ht->storage[hashIndex] = NULL;
+  }
+  
+  printf("RemovalWarning: Key at index %d has already been removed\n", hashIndex);
 }
 
 /****
@@ -104,6 +154,26 @@ void hash_table_remove(BasicHashTable *ht, char *key)
  ****/
 char *hash_table_retrieve(BasicHashTable *ht, char *key)
 {
+  // //hash the key, get an index back
+  //   unsigned int index = hash(key, ht->capacity);
+
+  // //check to see if storage[index] holds a Pair*
+  // if (ht->storage[index] != NULL)
+  //   //if it does, return the value associated with the key
+  //   {
+  //     return ht-> storage[index]->value;
+  //   }
+  // //else return NULL
+  // return NULL;
+
+  int hashIndex = hash(key, ht->capacity);
+
+  if (ht->storage[hashIndex] != NULL)
+  {
+    return ht->storage[hashIndex]->value;
+  }
+
+  printf("NULLWarning: There is not value stored at index %d\n", hashIndex);
   return NULL;
 }
 
@@ -114,9 +184,21 @@ char *hash_table_retrieve(BasicHashTable *ht, char *key)
  ****/
 void destroy_hash_table(BasicHashTable *ht)
 {
-
+  //Loop through every index of storage
+  for (int i = 0; i < ht->capacity; i++)
+  {
+    //if the index holds a Pair*
+    if (ht->storage[i] != NULL)
+    {
+      //free it
+      destroy_pair(ht->storage[i]);
+    }
+  }
+  //Free storage
+  free(ht->storage);
+  //Free struct
+  free(ht);
 }
-
 
 #ifndef TESTING
 int main(void)
@@ -124,8 +206,10 @@ int main(void)
   struct BasicHashTable *ht = create_hash_table(16);
 
   hash_table_insert(ht, "line", "Here today...\n");
+  
+  // hash_table_insert(ht, "line", "Here tomorrow...\n"); //sanity check to see if overwriting works
 
-  printf("%s", hash_table_retrieve(ht, "line"));
+  printf("%s", hash_table_retrieve(ht, "line")); //should return: Here today...
 
   hash_table_remove(ht, "line");
 
